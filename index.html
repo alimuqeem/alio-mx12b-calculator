@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>ALIO MX-12B</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="calculator">
+    <div class="brand-row">
+      <div class="logo">ALIO</div>
+      <div class="badges">
+        <span class="badge">MX-12B</span>
+        <span class="badge">12 DIGITS</span>
+      </div>
+    </div>
+
+    <div class="display-unit">
+      <div class="display-panel">
+        <div class="indicators">
+          <span id="ind-m" class="indicator">M</span>
+          <span id="ind-sto" class="indicator">STO</span>
+          <span id="ind-e" class="indicator">E</span>
+        </div>
+        <div id="screen" class="screen">0</div>
+      </div>
+      <div class="solar-bar" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <div class="keypad">
+      <button class="key key-ac" data-action="ac">ON/AC</button>
+      <button class="key key-c" data-action="c">C</button>
+      <button class="key key-fn" data-action="percent">%</button>
+      <button class="key key-fn" data-action="sqrt">&radic;</button>
+
+      <button class="key key-mem" data-action="mc">MC</button>
+      <button class="key key-mem" data-action="mr">MR</button>
+      <button class="key key-mem" data-action="m-">M-</button>
+      <button class="key key-mem" data-action="m+">M+</button>
+
+      <button class="key key-num" data-digit="7">7</button>
+      <button class="key key-num" data-digit="8">8</button>
+      <button class="key key-num" data-digit="9">9</button>
+      <button class="key key-op" data-op="÷">÷</button>
+
+      <button class="key key-num" data-digit="4">4</button>
+      <button class="key key-num" data-digit="5">5</button>
+      <button class="key key-num" data-digit="6">6</button>
+      <button class="key key-op" data-op="×">×</button>
+
+      <button class="key key-num" data-digit="1">1</button>
+      <button class="key key-num" data-digit="2">2</button>
+      <button class="key key-num" data-digit="3">3</button>
+      <button class="key key-op" data-op="-">-</button>
+
+      <button class="key key-num" data-digit="00">00</button>
+      <button class="key key-num" data-digit="0">0</button>
+      <button class="key key-num" data-action="decimal">.</button>
+      <button class="key key-op" data-op="+">+</button>
+
+      <button class="key key-sign" data-action="sign">+/-</button>
+      <button class="key key-eq" data-action="equals">=</button>
+    </div>
+  </div>
+
+  <script src="js/calculator-engine.js"></script>
+  <script src="js/click-sound.js"></script>
+  <script src="js/renderer.js"></script>
+</body>
+</html>

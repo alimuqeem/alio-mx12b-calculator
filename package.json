@@ -1,0 +1,53 @@
+{
+  "name": "alio-mx12b-calculator",
+  "version": "1.0.0",
+  "description": "A fully functional desktop clone of the Casio MX-12B calculator, rebranded as ALIO.",
+  "main": "main.js",
+  "author": "alimuqeem",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "dist": "electron-builder -mwl"
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.alio.mx12b-calculator",
+    "productName": "ALIO MX-12B Calculator",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "css/**/*",
+      "js/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] },
+        { "target": "zip", "arch": ["arm64", "x64"] }
+      ]
+    },
+    "win": {
+      "target": [
+        { "target": "zip", "arch": ["x64"] }
+      ]
+    },
+    "linux": {
+      "target": [
+        { "target": "zip", "arch": ["x64"] }
+      ],
+      "category": "Utility"
+    }
+  }
+}
