@@ -1,6 +1,6 @@
 # ALIO MX-12B Calculator
 
-A fully functional, desktop-executable clone of the Casio MX-12B desktop calculator, built with Electron and rebranded as **ALIO**. Matte white housing, angled 12-digit LCD, tactile convex keys, and authentic Casio-style percent-key arithmetic.
+A fully functional, desktop-executable clone of the Casio MX-12B desktop calculator, built with Electron and rebranded as **ALIO**. White housing, mint-green 12-digit LCD, tactile convex keys laid out to match the real MX-12B, and authentic Casio-style percent-key arithmetic.
 
 ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 
@@ -14,10 +14,12 @@ A fully functional, desktop-executable clone of the Casio MX-12B desktop calcula
   - `A ÷ B %` → `A ÷ (B / 100)`
   - `B %` alone (no pending operator) → `B / 100`
 - **Double-zero key (`00`)** for fast large-number entry, capped at 12 digits.
-- **Persistent memory register** (`MC` / `MR` / `M-` / `M+`) with a live `M` indicator, and a momentary `STO` flash on store.
-- **Square root (`√`)** and **sign toggle (`+/-`)**.
+- **Persistent memory register** (`MC` / `MR` / `M-` / `MU`) with a live `M` indicator, and a momentary `STO` flash on store. `MU` is labeled to match the real device's key legend; it performs a memory-add (the spec's `M+`).
+- **Combined `C/AC` key**, matching the real MX-12B: first press clears the current entry (like `C`); pressing again once the display is already `0` performs a full reset (like `AC`).
+- **`▶` key** deletes the last entered digit (backspace).
+- **Sign toggle (`+/-`)**.
 - **Chain calculation** — `5 + 3 × 2 =` evaluates left-to-right like a real four-function calculator.
-- **Full keyboard support**: number row + numpad, `+ - * /`, `%`, `Enter`/`=`, `Escape` (AC), `Backspace`.
+- **Full keyboard support**: number row + numpad, `+ - * /`, `%`, `Enter`/`=`, `Escape` (full reset), `Backspace`.
 - **Mechanical click feedback** on every valid key press, synthesized live via the Web Audio API (no bundled audio files).
 
 ## Running from source
@@ -67,6 +69,7 @@ test/engine.test.js        Standalone assertion suite for the engine
 
 A few behaviors weren't fully specified in the brief and were filled in with the most Casio-authentic default:
 
-- **`C` vs `AC`**: `C` clears the current entry only (display resets to `0`, error state clears, but any pending operator/first operand is preserved so you can continue the calculation). `AC` performs a full reset, including the pending operation — memory is untouched by both (only `MC` clears memory).
-- **`Backspace`** (keyboard-only, no on-screen key per the spec) deletes the last digit of the entry in progress.
+- **The on-screen key set follows a real MX-12B reference photo** rather than a literal reading of the original spec, once one was provided: a single `C/AC` key instead of separate `ON/AC`/`C` buttons, a `▶` (backspace) key instead of a dedicated `√` key, and `MU` instead of `M+` as the memory-add key's label. The underlying engine (`js/calculator-engine.js`) still exposes `inputSqrt`, `allClear`, and `clearEntry` individually — `clearOrAllClear` composes the last two to drive the combined key without losing either behavior.
+- **`C/AC`**: first press clears the current entry only (display resets to `0`, error state clears, pending operator/first operand preserved so you can continue the calculation). Pressing it again once the display is already `0` (or after an error) performs a full reset, including the pending operation. Memory is untouched by either — only `MC` clears memory.
+- **`Backspace`** (keyboard) and the on-screen **`▶`** key both delete the last digit of the entry in progress.
 - **Held keys don't repeat** — a `keydown` with `event.repeat === true` is ignored, matching how a physical calculator button behaves when held down.

@@ -39,7 +39,7 @@
       case 'sign': CalculatorEngine.toggleSign(state); break;
       case 'backspace': CalculatorEngine.backspace(state); break;
       case 'ac': CalculatorEngine.allClear(state); break;
-      case 'c': CalculatorEngine.clearEntry(state); break;
+      case 'clear': CalculatorEngine.clearOrAllClear(state); break;
       case 'mc': CalculatorEngine.memoryClear(state); break;
       case 'mr': CalculatorEngine.memoryRecall(state); break;
       case 'm+': CalculatorEngine.memoryAdd(state); flashSto(); break;
@@ -62,20 +62,6 @@
   });
 
   // --- Keyboard wiring ---
-  const KEY_TO_BUTTON = {
-    '0': '[data-digit="0"]', '1': '[data-digit="1"]', '2': '[data-digit="2"]',
-    '3': '[data-digit="3"]', '4': '[data-digit="4"]', '5': '[data-digit="5"]',
-    '6': '[data-digit="6"]', '7': '[data-digit="7"]', '8': '[data-digit="8"]',
-    '9': '[data-digit="9"]',
-    '.': '[data-action="decimal"]',
-    '+': '[data-op="+"]', '-': '[data-op="-"]',
-    '*': '[data-op="×"]', '/': '[data-op="÷"]',
-    '%': '[data-action="percent"]',
-    'Enter': '[data-action="equals"]', '=': '[data-action="equals"]',
-    'Backspace': null,
-    'Escape': '[data-action="ac"]'
-  };
-
   window.addEventListener('keydown', (e) => {
     if (e.repeat) return; // no key-repeat, matches a physical button press
 
@@ -89,8 +75,8 @@
     if (e.key === '/') { e.preventDefault(); return dispatch({ type: 'op', value: '÷' }, document.querySelector('[data-op="÷"]')); }
     if (e.key === '%') return dispatch({ type: 'percent' }, document.querySelector('[data-action="percent"]'));
     if (e.key === 'Enter' || e.key === '=') return dispatch({ type: 'equals' }, document.querySelector('[data-action="equals"]'));
-    if (e.key === 'Escape') return dispatch({ type: 'ac' }, document.querySelector('[data-action="ac"]'));
-    if (e.key === 'Backspace') return dispatch({ type: 'backspace' }, null);
+    if (e.key === 'Escape') return dispatch({ type: 'ac' }, document.querySelector('[data-action="clear"]'));
+    if (e.key === 'Backspace') return dispatch({ type: 'backspace' }, document.querySelector('[data-action="backspace"]'));
   });
 
   render();

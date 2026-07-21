@@ -9,59 +9,55 @@
   <div class="calculator">
     <div class="brand-row">
       <div class="logo">ALIO</div>
+      <div class="solar-panel" aria-hidden="true"></div>
       <div class="badges">
-        <span class="badge">MX-12B</span>
-        <span class="badge">12 DIGITS</span>
+        <span class="badge-model">MX-12B</span>
+        <span class="badge-digits"><span class="badge-digits-num">12</span>DIGITS</span>
       </div>
     </div>
 
-    <div class="display-unit">
-      <div class="display-panel">
-        <div class="indicators">
-          <span id="ind-m" class="indicator">M</span>
-          <span id="ind-sto" class="indicator">STO</span>
-          <span id="ind-e" class="indicator">E</span>
-        </div>
-        <div id="screen" class="screen">0</div>
+    <div class="display-panel">
+      <div class="indicators">
+        <span id="ind-m" class="indicator">M</span>
+        <span id="ind-sto" class="indicator indicator-sto">STO</span>
+        <span id="ind-e" class="indicator">E</span>
       </div>
-      <div class="solar-bar" aria-hidden="true">
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
+      <div id="screen" class="screen">0</div>
     </div>
 
     <div class="keypad">
-      <button class="key key-ac" data-action="ac">ON/AC</button>
-      <button class="key key-c" data-action="c">C</button>
-      <button class="key key-fn" data-action="percent">%</button>
-      <button class="key key-fn" data-action="sqrt">&radic;</button>
+      <span class="key-spacer" aria-hidden="true"></span>
+      <button class="key key-fn" data-action="mc">MC</button>
+      <button class="key key-fn" data-action="mr">MR</button>
+      <button class="key key-fn" data-action="m-">M-</button>
+      <div class="key-split">
+        <button class="key key-fn key-half" data-action="percent">%</button>
+        <button class="key key-fn key-half" data-action="m+">MU</button>
+      </div>
 
-      <button class="key key-mem" data-action="mc">MC</button>
-      <button class="key key-mem" data-action="mr">MR</button>
-      <button class="key key-mem" data-action="m-">M-</button>
-      <button class="key key-mem" data-action="m+">M+</button>
-
+      <button class="key key-fn" data-action="sign">+/-</button>
       <button class="key key-num" data-digit="7">7</button>
       <button class="key key-num" data-digit="8">8</button>
       <button class="key key-num" data-digit="9">9</button>
       <button class="key key-op" data-op="÷">÷</button>
 
+      <button class="key key-fn" data-action="backspace">&#9654;</button>
       <button class="key key-num" data-digit="4">4</button>
       <button class="key key-num" data-digit="5">5</button>
       <button class="key key-num" data-digit="6">6</button>
       <button class="key key-op" data-op="×">×</button>
 
+      <button class="key key-clear" data-action="clear">C/AC<span class="key-sub">ON</span></button>
       <button class="key key-num" data-digit="1">1</button>
       <button class="key key-num" data-digit="2">2</button>
       <button class="key key-num" data-digit="3">3</button>
       <button class="key key-op" data-op="-">-</button>
 
-      <button class="key key-num" data-digit="00">00</button>
-      <button class="key key-num" data-digit="0">0</button>
-      <button class="key key-num" data-action="decimal">.</button>
+      <button class="key key-fn" data-digit="0">0</button>
+      <button class="key key-fn" data-digit="00">00</button>
+      <button class="key key-fn" data-action="decimal">&middot;</button>
+      <button class="key key-fn" data-action="equals">=</button>
       <button class="key key-op" data-op="+">+</button>
-
-      <button class="key key-sign" data-action="sign">+/-</button>
-      <button class="key key-eq" data-action="equals">=</button>
     </div>
   </div>
 

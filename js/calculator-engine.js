@@ -207,6 +207,17 @@ function clearEntry(state) {
   state.error = false;
 }
 
+// The real MX-12B has a single combined C/AC key: pressing it clears the
+// current entry (like C) unless the display is already at 0 or in an
+// error state, in which case it performs a full reset (like AC).
+function clearOrAllClear(state) {
+  if (state.error || state.display === '0') {
+    allClear(state);
+  } else {
+    clearEntry(state);
+  }
+}
+
 function memoryAdd(state) {
   if (state.error) return;
   state.memory += parseFloat(state.display);
@@ -243,6 +254,7 @@ const CalculatorEngine = {
   backspace,
   allClear,
   clearEntry,
+  clearOrAllClear,
   memoryAdd,
   memorySubtract,
   memoryRecall,

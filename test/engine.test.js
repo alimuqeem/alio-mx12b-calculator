@@ -17,6 +17,7 @@ const dot = () => (s) => Engine.inputDecimal(s);
 const back = () => (s) => Engine.backspace(s);
 const ac = () => (s) => Engine.allClear(s);
 const c = () => (s) => Engine.clearEntry(s);
+const clearKey = () => (s) => Engine.clearOrAllClear(s);
 const mplus = () => (s) => Engine.memoryAdd(s);
 const mminus = () => (s) => Engine.memorySubtract(s);
 const mr = () => (s) => Engine.memoryRecall(s);
@@ -74,6 +75,19 @@ check('backspace to empty resets to 0', run([digit('5'), back()]).display, '0');
   check('C: 7+ then C then 2 =', s.display, '9');
 }
 check('AC full reset', run([digit('7'), op('+'), digit('3'), ac(), digit('2')]).display, '2');
+
+// combined C/AC key: first press clears entry only, second (at 0) does full reset
+{
+  const s = run([digit('7'), op('+'), digit('3'), clearKey()]);
+  check('C/AC first press clears entry, keeps pending op', s.display, '0');
+  Engine.inputDigit(s, '2');
+  Engine.inputEquals(s);
+  check('C/AC: 7+ then clear then 2 =', s.display, '9');
+}
+check('C/AC second press (at 0) fully resets', run([
+  digit('7'), op('+'), digit('3'), clearKey(), clearKey(), digit('2')
+]).display, '2');
+check('C/AC clears error state', run([digit('5'), op('÷'), digit('0'), eq(), clearKey()]).display, '0');
 
 // memory
 {

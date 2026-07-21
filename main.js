@@ -3,12 +3,12 @@ const path = require('path');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 420,
-    height: 660,
+    width: 440,
+    height: 700,
     resizable: false,
     maximizable: false,
     title: 'ALIO MX-12B',
-    backgroundColor: '#f4f3ef',
+    backgroundColor: '#3a3a38',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
