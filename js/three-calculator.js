@@ -222,6 +222,54 @@ function makeBackgroundTexture() {
   return texture;
 }
 
+// ---- LCD digits: real 7-segment glyphs instead of a monospace text font,
+// matching the segmented look of an actual calculator display. Every slot
+// draws all 7 segments at all times — lit ones in full LCD ink, unlit ones
+// as a faint ghost — replicating the always-visible "8" pattern behind the
+// active digits on a real LCD panel.
+const SEGMENT_MAP = {
+  '0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc',
+  '5': 'afgcd', '6': 'afgecd', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg',
+  E: 'afged', '-': 'g',
+};
+const SEG_SLOTS = 13; // 1 sign slot + up to 12 digits
+const SEG_DIGIT_W = 17, SEG_DIGIT_H = 46, SEG_GAP = 6, SEG_THICK = 4;
+
+function drawSevenSegDigit(ctx, x, y, w, h, t, lit, onColor, offColor) {
+  const midY = h / 2, topY = t / 2, botY = h - t / 2, leftX = t / 2, rightX = w - t / 2;
+  const segs = {
+    a: [[leftX + t / 2, topY], [rightX - t / 2, topY]],
+    g: [[leftX + t / 2, midY], [rightX - t / 2, midY]],
+    d: [[leftX + t / 2, botY], [rightX - t / 2, botY]],
+    f: [[leftX, topY + t / 2], [leftX, midY - t / 2]],
+    b: [[rightX, topY + t / 2], [rightX, midY - t / 2]],
+    e: [[leftX, midY + t / 2], [leftX, botY - t / 2]],
+    c: [[rightX, midY + t / 2], [rightX, botY - t / 2]],
+  };
+  ctx.lineWidth = t;
+  ctx.lineCap = 'round';
+  Object.keys(segs).forEach((key) => {
+    const [[x1, y1], [x2, y2]] = segs[key];
+    ctx.strokeStyle = lit.includes(key) ? onColor : offColor;
+    ctx.beginPath();
+    ctx.moveTo(x + x1, y + y1);
+    ctx.lineTo(x + x2, y + y2);
+    ctx.stroke();
+  });
+}
+
+function tokenizeDisplay(display) {
+  const tokens = [];
+  for (const ch of display) {
+    if (ch === '.') {
+      if (tokens.length) tokens[tokens.length - 1].dot = true;
+      continue;
+    }
+    tokens.push({ ch, dot: false });
+  }
+  return tokens;
+}
+
 function drawDisplayOverlay(ctx, w, h, { display, memoryActive, errorActive, stoActive }) {
   ctx.clearRect(0, 0, w, h);
 
@@ -238,11 +286,26 @@ function drawDisplayOverlay(ctx, w, h, { display, memoryActive, errorActive, sto
     ctx.fillText(ind.label, 6, ind.y);
   });
 
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  ctx.font = '700 40px "Courier New", monospace';
-  ctx.fillStyle = LCD_INK;
-  ctx.fillText(display, w - 14, h / 2 + 2);
+  const tokens = tokenizeDisplay(display).slice(-SEG_SLOTS);
+  const padded = new Array(Math.max(0, SEG_SLOTS - tokens.length)).fill(null).concat(tokens);
+  const cellStep = SEG_DIGIT_W + SEG_GAP;
+  const totalW = SEG_SLOTS * cellStep - SEG_GAP;
+  const startX = w - 14 - totalW;
+  const digitY = (h - SEG_DIGIT_H) / 2;
+  const onColor = LCD_INK;
+  const offColor = 'rgba(46,51,38,0.07)';
+
+  padded.forEach((token, i) => {
+    const x = startX + i * cellStep;
+    const lit = token ? (SEGMENT_MAP[token.ch] || '') : '';
+    drawSevenSegDigit(ctx, x, digitY, SEG_DIGIT_W, SEG_DIGIT_H, SEG_THICK, lit, onColor, offColor);
+    if (token && token.dot) {
+      ctx.fillStyle = onColor;
+      ctx.beginPath();
+      ctx.arc(x + SEG_DIGIT_W + SEG_GAP / 2, digitY + SEG_DIGIT_H - 3, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
 }
 
 // ---- Scene setup ----
