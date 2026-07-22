@@ -1,5 +1,8 @@
-// Synthesizes a short mechanical "click" using the Web Audio API so the app
-// ships with zero binary audio assets.
+// Synthesizes a mechanical button "click" using the Web Audio API so the app
+// ships with zero binary audio assets. Deliberately avoids a tonal
+// oscillator sweep (reads as a sci-fi UI blip) in favor of a short filtered
+// noise burst for the sharp "tick" plus a low sine "thock" underneath for
+// body weight — the same recipe used to fake a physical switch click.
 const ClickSound = (() => {
   let ctx = null;
 
@@ -13,22 +16,45 @@ const ClickSound = (() => {
     const audioCtx = getContext();
     const now = audioCtx.currentTime;
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    // Sharp broadband tick: filtered white noise, no pitch content.
+    const tickDuration = 0.018;
+    const bufferSize = Math.max(1, Math.floor(audioCtx.sampleRate * tickDuration));
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(1400, now);
-    osc.frequency.exponentialRampToValueAtTime(600, now + 0.02);
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
 
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.002);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 3200;
+    filter.Q.value = 0.9;
 
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    const tickGain = audioCtx.createGain();
+    tickGain.gain.setValueAtTime(0.5, now);
+    tickGain.gain.exponentialRampToValueAtTime(0.0001, now + tickDuration);
 
-    osc.start(now);
-    osc.stop(now + 0.04);
+    noise.connect(filter);
+    filter.connect(tickGain);
+    tickGain.connect(audioCtx.destination);
+    noise.start(now);
+    noise.stop(now + tickDuration);
+
+    // Low thock underneath, giving the tick some mechanical weight.
+    const thock = audioCtx.createOscillator();
+    thock.type = 'sine';
+    thock.frequency.setValueAtTime(180, now);
+    thock.frequency.exponentialRampToValueAtTime(90, now + 0.02);
+
+    const thockGain = audioCtx.createGain();
+    thockGain.gain.setValueAtTime(0.22, now);
+    thockGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+
+    thock.connect(thockGain);
+    thockGain.connect(audioCtx.destination);
+    thock.start(now);
+    thock.stop(now + 0.03);
   }
 
   return { play };
