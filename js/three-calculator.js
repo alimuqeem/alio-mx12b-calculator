@@ -25,19 +25,19 @@ function toWorld(leftPx, topPx, w, h) {
   return { x: cx - CALC_W / 2, y: CALC_H / 2 - cy };
 }
 
-// ---- Palette: pastel-pink MX-12B reference photo ----
-const HOUSING = '#f4cddb', INK = '#20232a';
+// ---- Palette: off-white housing, lavender numbers, darkened pink operators ----
+const HOUSING = '#f7f5f1', INK = '#20232a';
 const LCD_BG = '#cbd2b3', LCD_BG_DARK = '#bcc4a2', LCD_INK = '#2e3326';
 const KEY_WHITE = '#fdfaf6', KEY_WHITE_DARK = '#e9e1d8';
 const KEY_NUM = '#bac8e6', KEY_NUM_DARK = '#9aaed9';
-const KEY_OP = '#f0aecb', KEY_OP_DARK = '#e491b7';
+const KEY_OP = '#a87a8e', KEY_OP_DARK = '#a06680';
 const KEY_CLEAR = '#ff4f8f', KEY_CLEAR_DARK = '#e0327a';
 const KEY_TEXT = '#20232a';
 
 const STYLES = {
   num: { topColor: KEY_NUM, bottomColor: KEY_NUM_DARK, ledgeColor: '#7f93bc', textColor: KEY_TEXT, fontSize: 16 },
   fn: { topColor: KEY_WHITE, bottomColor: KEY_WHITE_DARK, ledgeColor: '#c9c2b8', textColor: KEY_TEXT, fontSize: 13 },
-  op: { topColor: KEY_OP, bottomColor: KEY_OP_DARK, ledgeColor: '#c07793', textColor: KEY_TEXT, fontSize: 18 },
+  op: { topColor: KEY_OP, bottomColor: KEY_OP_DARK, ledgeColor: '#865367', textColor: '#fdfaf6', fontSize: 18 },
   clear: { topColor: KEY_CLEAR, bottomColor: KEY_CLEAR_DARK, ledgeColor: '#b81f5c', textColor: '#fff7fa', fontSize: 13 },
 };
 
@@ -182,7 +182,7 @@ function makeBackgroundTexture() {
   roundRectPath(ctx, 0, 0, CALC_W, CALC_H, 28);
   ctx.fillStyle = HOUSING;
   ctx.fill();
-  ctx.strokeStyle = '#e6b3c8';
+  ctx.strokeStyle = '#e6e2da';
   ctx.lineWidth = 1;
   ctx.stroke();
 
