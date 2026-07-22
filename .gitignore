@@ -1,7 +1,2 @@
-node_modules/
 .DS_Store
 *.log
-# electron-builder output. Packaged executables are ~90-97MB each,
-# right at GitHub's 100MB per-file limit — they're published via
-# GitHub Releases instead of being committed to git history.
-dist/
