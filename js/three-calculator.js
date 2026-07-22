@@ -25,28 +25,33 @@ function toWorld(leftPx, topPx, w, h) {
   return { x: cx - CALC_W / 2, y: CALC_H / 2 - cy };
 }
 
-// ---- Palette (matches the retired css/style.css variables) ----
-const HOUSING = '#fdfdfb', INK = '#1c1c1a';
-const LCD_BG = '#d7e6da', LCD_BG_DARK = '#c7dccb', LCD_INK = '#26362a';
-const KEY_WHITE = '#fdfdfb', KEY_WHITE_DARK = '#d8d6ce';
-const KEY_GREY = '#cac6ba', KEY_GREY_DARK = '#a9a498';
-const KEY_CLEAR = '#e3a79a', KEY_CLEAR_DARK = '#c4816f';
-const KEY_TEXT = '#2a2a27';
+// ---- Palette: pastel-pink MX-12B reference photo ----
+const HOUSING = '#f4cddb', INK = '#20232a';
+const LCD_BG = '#cbd2b3', LCD_BG_DARK = '#bcc4a2', LCD_INK = '#2e3326';
+const KEY_WHITE = '#fdfaf6', KEY_WHITE_DARK = '#e9e1d8';
+const KEY_NUM = '#bac8e6', KEY_NUM_DARK = '#9aaed9';
+const KEY_OP = '#f0aecb', KEY_OP_DARK = '#e491b7';
+const KEY_CLEAR = '#ff4f8f', KEY_CLEAR_DARK = '#e0327a';
+const KEY_TEXT = '#20232a';
 
 const STYLES = {
-  num: { topColor: KEY_GREY, bottomColor: KEY_GREY_DARK, ledgeColor: '#8b8778', textColor: KEY_TEXT, fontSize: 16 },
-  fn: { topColor: KEY_WHITE, bottomColor: KEY_WHITE_DARK, ledgeColor: '#b6b3a8', textColor: KEY_TEXT, fontSize: 13 },
-  op: { topColor: KEY_WHITE, bottomColor: KEY_WHITE_DARK, ledgeColor: '#b6b3a8', textColor: KEY_TEXT, fontSize: 18 },
-  clear: { topColor: KEY_CLEAR, bottomColor: KEY_CLEAR_DARK, ledgeColor: '#9c5c48', textColor: '#4a1c10', fontSize: 13 },
+  num: { topColor: KEY_NUM, bottomColor: KEY_NUM_DARK, ledgeColor: '#7f93bc', textColor: KEY_TEXT, fontSize: 16 },
+  fn: { topColor: KEY_WHITE, bottomColor: KEY_WHITE_DARK, ledgeColor: '#c9c2b8', textColor: KEY_TEXT, fontSize: 13 },
+  op: { topColor: KEY_OP, bottomColor: KEY_OP_DARK, ledgeColor: '#c07793', textColor: KEY_TEXT, fontSize: 18 },
+  clear: { topColor: KEY_CLEAR, bottomColor: KEY_CLEAR_DARK, ledgeColor: '#b81f5c', textColor: '#fff7fa', fontSize: 13 },
 };
 
-// ---- Key layout, mirroring the old index.html grid 1:1 ----
+// ---- Key layout, mirroring the pink MX-12B reference photo ----
+// The real device has both a dedicated M+ key and a separate %/MU pill;
+// MU's exact semantics aren't documented, so it's wired to the same
+// percent function as % (both are percent-family keys sharing one pill).
 const KEY_DEFS = [
-  { row: 0, col: 1, cls: 'fn', action: 'mc', label: 'MC' },
-  { row: 0, col: 2, cls: 'fn', action: 'mr', label: 'MR' },
-  { row: 0, col: 3, cls: 'fn', action: 'm-', label: 'M-' },
+  { row: 0, col: 0, cls: 'fn', action: 'mc', label: 'MC' },
+  { row: 0, col: 1, cls: 'fn', action: 'mr', label: 'MR' },
+  { row: 0, col: 2, cls: 'fn', action: 'm-', label: 'M-' },
+  { row: 0, col: 3, cls: 'fn', action: 'm+', label: 'M+' },
   { row: 0, col: 4, half: 'left', cls: 'fn', action: 'percent', label: '%' },
-  { row: 0, col: 4, half: 'right', cls: 'fn', action: 'm+', label: 'MU' },
+  { row: 0, col: 4, half: 'right', cls: 'fn', action: 'markup', label: 'MU' },
 
   { row: 1, col: 0, cls: 'fn', action: 'sign', label: '+/-' },
   { row: 1, col: 1, cls: 'num', digit: '7', label: '7' },
@@ -66,27 +71,34 @@ const KEY_DEFS = [
   { row: 3, col: 3, cls: 'num', digit: '3', label: '3' },
   { row: 3, col: 4, cls: 'op', op: '-', label: '-' },
 
-  { row: 4, col: 0, cls: 'fn', digit: '0', label: '0' },
-  { row: 4, col: 1, cls: 'fn', digit: '00', label: '00' },
-  { row: 4, col: 2, cls: 'fn', action: 'decimal', label: '·' },
-  { row: 4, col: 3, cls: 'fn', action: 'equals', label: '=' },
+  { row: 4, col: 0, cls: 'num', digit: '0', label: '0' },
+  { row: 4, col: 1, cls: 'num', digit: '00', label: '00' },
+  { row: 4, col: 2, cls: 'num', action: 'decimal', label: '·' },
+  { row: 4, col: 3, cls: 'num', action: 'equals', label: '=' },
   { row: 4, col: 4, cls: 'op', op: '+', label: '+' },
 ];
 
 // ---- Canvas texture drawing ----
+// r accepts either a uniform radius or a per-corner {tl,tr,br,bl} object —
+// the latter is used to render the %/MU pill as a true rounded capsule.
 function roundRectPath(ctx, x, y, w, h, r) {
+  const rr = typeof r === 'number' ? { tl: r, tr: r, br: r, bl: r } : r;
   ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
+  ctx.moveTo(x + rr.tl, y);
+  ctx.lineTo(x + w - rr.tr, y);
+  ctx.arcTo(x + w, y, x + w, y + rr.tr, rr.tr);
+  ctx.lineTo(x + w, y + h - rr.br);
+  ctx.arcTo(x + w, y + h, x + w - rr.br, y + h, rr.br);
+  ctx.lineTo(x + rr.bl, y + h);
+  ctx.arcTo(x, y + h, x, y + h - rr.bl, rr.bl);
+  ctx.lineTo(x, y + rr.tl);
+  ctx.arcTo(x, y, x + rr.tl, y, rr.tl);
   ctx.closePath();
 }
 
 function drawButtonFace(ctx, w, h, opts) {
-  const { topColor, bottomColor, ledgeColor, textColor, label, subLabel, fontSize, pressed } = opts;
-  const r = 9;
+  const { topColor, bottomColor, ledgeColor, textColor, label, subLabel, fontSize, pressed, radius } = opts;
+  const r = radius || 9;
   ctx.clearRect(0, 0, w, h);
 
   if (pressed) {
@@ -167,10 +179,10 @@ function makeBackgroundTexture() {
   const ctx = canvas.getContext('2d');
   ctx.scale(scale, scale);
 
-  roundRectPath(ctx, 0, 0, CALC_W, CALC_H, 20);
+  roundRectPath(ctx, 0, 0, CALC_W, CALC_H, 28);
   ctx.fillStyle = HOUSING;
   ctx.fill();
-  ctx.strokeStyle = '#eceae3';
+  ctx.strokeStyle = '#e6b3c8';
   ctx.lineWidth = 1;
   ctx.stroke();
 
@@ -189,7 +201,7 @@ function makeBackgroundTexture() {
   ctx.fillStyle = spGrad;
   ctx.fill();
 
-  ctx.fillStyle = '#4a4a45';
+  ctx.fillStyle = '#4a4d57';
   ctx.textAlign = 'right';
   ctx.font = '700 11px "Helvetica Neue", Arial, sans-serif';
   ctx.fillText('MX-12B', CALC_W - PAD_X, PAD_TOP + 12);
@@ -311,6 +323,16 @@ function actionFromDef(def) {
   return { type: def.action };
 }
 
+// The %/MU pill renders as a true rounded capsule: full semicircle on its
+// outer edge, a small radius on the edge the two halves share.
+function radiusForDef(def, h) {
+  if (!def.half) return 9;
+  const full = h / 2, small = 4;
+  return def.half === 'left'
+    ? { tl: full, bl: full, tr: small, br: small }
+    : { tr: full, br: full, tl: small, bl: small };
+}
+
 const entries = [];
 const byDigit = {}, byOp = {}, byAction = {};
 
@@ -318,7 +340,7 @@ KEY_DEFS.forEach((def) => {
   const { leftPx, topPx, w, h } = geometryForDef(def);
   const pos = toWorld(leftPx, topPx, w, h);
   const style = STYLES[def.cls];
-  const opts = { ...style, label: def.label, subLabel: def.subLabel };
+  const opts = { ...style, label: def.label, subLabel: def.subLabel, radius: radiusForDef(def, h) };
 
   const normalTexture = makeButtonTexture(w, h, { ...opts, pressed: false });
   const pressedTexture = makeButtonTexture(w, h, { ...opts, pressed: true });
@@ -378,6 +400,7 @@ function dispatch(action, entry) {
     case 'op': CalculatorEngine.inputOperator(state, action.value); break;
     case 'equals': CalculatorEngine.inputEquals(state); break;
     case 'percent': CalculatorEngine.inputPercent(state); break;
+    case 'markup': CalculatorEngine.inputPercent(state); break;
     case 'sqrt': CalculatorEngine.inputSqrt(state); break;
     case 'sign': CalculatorEngine.toggleSign(state); break;
     case 'backspace': CalculatorEngine.backspace(state); break;

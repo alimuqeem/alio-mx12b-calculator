@@ -16,7 +16,7 @@ A cross-platform clone of the Casio MX-12B desktop calculator, rebranded as **AL
   - `A ÷ B %` → `A ÷ (B / 100)`
   - `B %` alone (no pending operator) → `B / 100`
 - **Double-zero key (`00`)** for fast large-number entry, capped at 12 digits.
-- **Persistent memory register** (`MC` / `MR` / `M-` / `MU`) with a live `M` indicator, and a momentary `STO` flash on store. `MU` is labeled to match the real device's key legend; it performs a memory-add (the spec's `M+`).
+- **Persistent memory register** (`MC` / `MR` / `M-` / `M+`) with a live `M` indicator, and a momentary `STO` flash on store.
 - **Combined `C/AC` key**, matching the real MX-12B: first press clears the current entry (like `C`); pressing again once the display is already `0` performs a full reset (like `AC`).
 - **`▶` key** deletes the last entered digit (backspace).
 - **Sign toggle (`+/-`)**.
@@ -61,7 +61,8 @@ The arithmetic engine (`calculator-engine.js`) was already a pure, DOM-independe
 
 ## Design notes / judgment calls
 
-- **The on-screen key set follows a real MX-12B reference photo**: a single `C/AC` key instead of separate `ON/AC`/`C` buttons, a `▶` (backspace) key instead of a dedicated `√` key, and `MU` instead of `M+` as the memory-add key's label. The engine still exposes `inputSqrt`, `allClear`, and `clearEntry` individually — `clearOrAllClear` composes the last two to drive the combined key without losing either behavior.
+- **The on-screen key set and pastel-pink color scheme follow a real MX-12B reference photo**: a single `C/AC` key instead of separate `ON/AC`/`C` buttons, a `▶` (backspace) key instead of a dedicated `√` key, lavender number keys, pink operator keys, a magenta `C/AC`, and a rounded `%`/`MU` capsule button. The engine still exposes `inputSqrt`, `allClear`, and `clearEntry` individually — `clearOrAllClear` composes the last two to drive the combined key without losing either behavior.
+- **`MU`'s exact real-world semantics are undocumented** — it's wired to the same percent function as `%`, since both live in the same pill and are percent-family keys. `M+` is a real, distinct memory-add key.
 - **`C/AC`**: first press clears the current entry only (display resets to `0`, error state clears, pending operator/first operand preserved so you can continue the calculation). Pressing it again once the display is already `0` (or after an error) performs a full reset, including the pending operation. Memory is untouched by either — only `MC` clears memory.
 - **Button textures are pre-baked in two states (normal/pressed)** rather than redrawn per-frame — a click swaps the texture and nudges the mesh down a couple of units for ~90ms, mirroring the old CSS `:active` transform, then reverts.
 - **Held keys don't repeat** — a `keydown` with `event.repeat === true` is ignored, matching how a physical calculator button behaves when held down.
