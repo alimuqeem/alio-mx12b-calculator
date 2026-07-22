@@ -20,8 +20,13 @@ function formatNumber(num) {
   if (!isFinite(num)) return null;
   if (Math.abs(num) >= 1e12) return null;
 
-  // Neutralise floating point artifacts (e.g. 0.1 + 0.2) before counting digits.
-  num = Math.round(num * 1e9) / 1e9;
+  // Neutralise floating point artifacts (e.g. 0.1 + 0.2) by rounding to 15
+  // significant digits — enough to erase FP noise (which shows up around
+  // the 16th-17th digit) without capping precision the 12-digit display
+  // still has room for, and safe at any magnitude (unlike a fixed decimal
+  // multiplier, which can overflow Number's safe-integer range for numbers
+  // with many integer digits).
+  num = Number(num.toPrecision(15));
 
   let str;
   if (Number.isInteger(num)) {
@@ -67,8 +72,8 @@ function inputDigit(state, digit) {
     return;
   }
 
-  if (state.display === '0' && digit !== '00') {
-    state.display = digit;
+  if (state.display === '0') {
+    state.display = digit === '00' ? '0' : digit;
     return;
   }
 
@@ -232,7 +237,9 @@ function memorySubtract(state) {
 
 function memoryRecall(state) {
   if (state.error) return;
-  state.display = formatNumber(state.memory) || '0';
+  const formatted = formatNumber(state.memory);
+  if (formatted === null) return setError(state);
+  state.display = formatted;
   state.overwrite = true;
 }
 

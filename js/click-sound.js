@@ -13,6 +13,17 @@ const ClickSound = (() => {
   }
 
   function play() {
+    // Never let an audio failure (no AudioContext, autoplay policy, etc.)
+    // block the caller — the display must still update even if the click
+    // can't be heard.
+    try {
+      playInternal();
+    } catch (err) {
+      /* silent: audio is a nice-to-have, not required for the app to work */
+    }
+  }
+
+  function playInternal() {
     const audioCtx = getContext();
     const now = audioCtx.currentTime;
 

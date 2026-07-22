@@ -6,6 +6,24 @@
 // sound are unchanged and reused as-is.
 import * as THREE from 'three';
 
+// Fail soft instead of leaving a blank page if WebGL isn't available
+// (disabled GPU drivers, some headless/locked-down browsers, etc).
+function isWebGLAvailable() {
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+  } catch (err) {
+    return false;
+  }
+}
+if (!isWebGLAvailable()) {
+  document.body.innerHTML =
+    '<p style="color:#f5f5f5;font:16px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;' +
+    'text-align:center;margin-top:40vh;padding:0 24px;">' +
+    'This calculator needs WebGL, which isn’t available in this browser.</p>';
+  throw new Error('WebGL unavailable');
+}
+
 // ---- Layout (CSS-px-equivalent world units) ----
 const CALC_W = 380;
 const PAD_X = 18, PAD_TOP = 18, PAD_BOTTOM = 22;
@@ -350,6 +368,12 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 
+// Render on demand rather than every animation frame — nothing in this
+// scene animates continuously, so a perpetual RAF loop would just burn
+// battery/GPU while the calculator sits idle between key presses.
+let needsRender = true;
+function requestRender() { needsRender = true; }
+
 function fitCamera() {
   const w = window.innerWidth, h = window.innerHeight;
   renderer.setSize(w, h);
@@ -369,6 +393,7 @@ function fitCamera() {
   camera.top = viewH / 2;
   camera.bottom = -viewH / 2;
   camera.updateProjectionMatrix();
+  requestRender();
 }
 window.addEventListener('resize', fitCamera);
 fitCamera();
@@ -431,8 +456,14 @@ const byDigit = {}, byOp = {}, byAction = {};
 
 // Key labels use the Poppins webfont (closer to a real calculator's bold
 // geometric legends than a system sans); load it before baking any button
-// textures so the canvas draws don't race the font fetch.
-await document.fonts.load('700 1em "Poppins"');
+// textures so the canvas draws don't race the font fetch. Falls back to
+// the system sans in drawButtonFace's font stack if this fails or if the
+// Font Loading API isn't available at all.
+try {
+  await document.fonts.load('700 1em "Poppins"');
+} catch (err) {
+  /* fall back to system font */
+}
 
 KEY_DEFS.forEach((def) => {
   const { leftPx, topPx, w, h } = geometryForDef(def);
@@ -470,6 +501,7 @@ function updateDisplay() {
     stoActive: performance.now() < stoFlashUntil,
   });
   displayTexture.needsUpdate = true;
+  requestRender();
 }
 
 function flashSto() {
@@ -482,10 +514,12 @@ function pressVisual(entry) {
   if (!entry) return;
   entry.mesh.material.map = entry.pressedTexture;
   entry.mesh.position.y = entry.baseY - 2;
+  requestRender();
   clearTimeout(entry.timer);
   entry.timer = setTimeout(() => {
     entry.mesh.material.map = entry.normalTexture;
     entry.mesh.position.y = entry.baseY;
+    requestRender();
   }, 90);
 }
 
@@ -521,6 +555,7 @@ const pointer = new THREE.Vector2();
 const keyMeshes = entries.map((e) => e.mesh);
 
 renderer.domElement.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return; // ignore right/middle click
   const rect = renderer.domElement.getBoundingClientRect();
   pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
   pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -551,6 +586,8 @@ updateDisplay();
 
 function animate() {
   requestAnimationFrame(animate);
+  if (!needsRender) return;
+  needsRender = false;
   renderer.render(scene, camera);
 }
 animate();
