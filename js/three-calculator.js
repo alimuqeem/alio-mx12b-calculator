@@ -147,11 +147,11 @@ function drawButtonFace(ctx, w, h, opts) {
   ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = `700 ${fontSize}px "Helvetica Neue", Arial, sans-serif`;
+  ctx.font = `700 ${fontSize}px "Poppins", "Helvetica Neue", Arial, sans-serif`;
   const cy = pressed ? h / 2 + 2 : (h - 4) / 2;
   if (subLabel) {
     ctx.fillText(label, w / 2, cy - 5);
-    ctx.font = '700 9px "Helvetica Neue", Arial, sans-serif';
+    ctx.font = '700 9px "Poppins", "Helvetica Neue", Arial, sans-serif';
     ctx.fillText(subLabel, w / 2, cy + 9);
   } else {
     ctx.fillText(label, w / 2, cy);
@@ -398,6 +398,11 @@ function radiusForDef(def, h) {
 
 const entries = [];
 const byDigit = {}, byOp = {}, byAction = {};
+
+// Key labels use the Poppins webfont (closer to a real calculator's bold
+// geometric legends than a system sans); load it before baking any button
+// textures so the canvas draws don't race the font fetch.
+await document.fonts.load('700 1em "Poppins"');
 
 KEY_DEFS.forEach((def) => {
   const { leftPx, topPx, w, h } = geometryForDef(def);
