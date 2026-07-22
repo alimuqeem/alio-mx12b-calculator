@@ -265,8 +265,26 @@ function tokenizeDisplay(display) {
       if (tokens.length) tokens[tokens.length - 1].dot = true;
       continue;
     }
-    tokens.push({ ch, dot: false });
+    tokens.push({ ch, dot: false, comma: false });
   }
+  return tokens;
+}
+
+// Marks every third integer digit (from the right) with a thousands-comma.
+// Real 7-segment displays only have one punctuation dot per digit position,
+// so the comma reuses the exact same dot glyph as the decimal point —
+// they can never collide, since the decimal point always lands on the last
+// integer digit, which can never itself be a comma position.
+function addCommaFlags(tokens) {
+  const dotAt = tokens.findIndex((t) => t.dot);
+  const intDigitIdxs = tokens
+    .map((t, i) => i)
+    .filter((i) => tokens[i].ch !== '-' && (dotAt === -1 || i <= dotAt));
+  const intLen = intDigitIdxs.length;
+  intDigitIdxs.forEach((tokenIdx, pos) => {
+    const remaining = intLen - 1 - pos;
+    if (remaining > 0 && remaining % 3 === 0) tokens[tokenIdx].comma = true;
+  });
   return tokens;
 }
 
@@ -286,7 +304,7 @@ function drawDisplayOverlay(ctx, w, h, { display, memoryActive, errorActive, sto
     ctx.fillText(ind.label, 6, ind.y);
   });
 
-  const tokens = tokenizeDisplay(display).slice(-SEG_SLOTS);
+  const tokens = addCommaFlags(tokenizeDisplay(display)).slice(-SEG_SLOTS);
   const padded = new Array(Math.max(0, SEG_SLOTS - tokens.length)).fill(null).concat(tokens);
   const cellStep = SEG_DIGIT_W + SEG_GAP;
   const totalW = SEG_SLOTS * cellStep - SEG_GAP;
@@ -299,11 +317,23 @@ function drawDisplayOverlay(ctx, w, h, { display, memoryActive, errorActive, sto
     const x = startX + i * cellStep;
     const lit = token ? (SEGMENT_MAP[token.ch] || '') : '';
     drawSevenSegDigit(ctx, x, digitY, SEG_DIGIT_W, SEG_DIGIT_H, SEG_THICK, lit, onColor, offColor);
+    const markX = x + SEG_DIGIT_W + SEG_GAP / 2;
+    const markY = digitY + SEG_DIGIT_H - 3;
     if (token && token.dot) {
       ctx.fillStyle = onColor;
       ctx.beginPath();
-      ctx.arc(x + SEG_DIGIT_W + SEG_GAP / 2, digitY + SEG_DIGIT_H - 3, 2.2, 0, Math.PI * 2);
+      ctx.arc(markX, markY, 2.2, 0, Math.PI * 2);
       ctx.fill();
+    } else if (token && token.comma) {
+      // A diagonal tick instead of a round dot, so a thousands-comma reads
+      // as distinct from the decimal point rather than a second "period".
+      ctx.strokeStyle = onColor;
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(markX - 1.3, markY - 1.5);
+      ctx.lineTo(markX + 1.6, markY + 3.3);
+      ctx.stroke();
     }
   });
 }
